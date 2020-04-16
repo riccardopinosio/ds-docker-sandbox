@@ -6,7 +6,8 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     curl \
     zsh \
-    vim
+    vim \
+    less
 
 # rstudio to use zsh and sudo
 RUN usermod -s /bin/zsh rstudio \
@@ -36,5 +37,5 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
 
 USER root
 
-# commands at startup for rstudio user
-ENTRYPOINT runuser -l rstudio -c 'chezmoi update' && runuser -l rstudio -c 'chezmoi apply'
+# commands at startup
+COPY initializations.sh /etc/cont-init.d
