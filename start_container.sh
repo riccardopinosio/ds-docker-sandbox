@@ -10,7 +10,7 @@ esac
 done
 
 if [ -z "$SOURCE_FOLDER" ]; then
-docker run -i -p 8787:8787 -e PASSWORD=sandbox --name sandbox -v ${SOURCE_FOLDER}:/home/rstudio/${TARGET_NAME}
+docker run -i -p 8787:8787 -e PASSWORD=sandbox --name sandbox -h sandbox -v ${SOURCE_FOLDER}:/home/rstudio/${TARGET_NAME}
 else
-docker run -i -p 8787:8787 -e PASSWORD=sandbox --name sandbox
+docker run -i -p 8787:8787 -e PASSWORD=sandbox --name sandbox -h sandbox
 fi
