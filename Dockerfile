@@ -1,15 +1,17 @@
-FROM rocker/tidyverse:3.6.3
+#FROM rocker/tidyverse:3.6.3
+FROM ubuntu:18.04
 
 # updates and installs
 
 RUN apt-get update --fix-missing \
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -y \
     curl \
     zsh \
     vim \
     less \
     bzip2 \
     ca-certificates \
+    openssh-server \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
