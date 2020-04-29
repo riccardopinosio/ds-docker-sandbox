@@ -1,7 +1,7 @@
 param([string]$s, [string]$t)
 
 if ($s){
-docker run -i -p 8787:8787 -e PASSWORD=sandbox --name sandbox -h sandbox -v ${s}:/home/rstudio/${t} sandbox
+docker run -i -p 8787:8787 --name sandbox -h sandbox -v ${s}:/home/riccardo/${t} sandbox
 } else {
-    docker run -i -p 8787:8787 -e PASSWORD=sandbox --name sandbox -h sandbox sandbox    
+    docker run -i -p 8787:8787 --name sandbox -h sandbox sandbox    
 }
