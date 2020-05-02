@@ -1,4 +1,4 @@
-# Dockerfile for a basic DS sandbox for work and research
+# BASE Dockerfile for a basic DS sandbox for work and research
 FROM ubuntu:bionic
 
 ENV R_VERSION=4.0.0 \
@@ -34,9 +34,9 @@ RUN apt-get update \
     zlib1g \
     software-properties-common \
     ed \
-		less \
-		vim-tiny \
-		wget \
+    less \
+    vim-tiny \
+    wget \
     zsh \
     file \
     git \
@@ -52,9 +52,14 @@ RUN apt-get update \
     python-setuptools \
     sudo \
     curl \
+    # useful to test x11 forwarding if needed
+    x11-apps \
     ## additional repos for ubuntu
     && add-apt-repository --enable-source --yes "ppa:marutter/rrutter3.5" \
-	  && add-apt-repository --enable-source --yes "ppa:marutter/c2d4u3.5" 
+    && add-apt-repository --enable-source --yes "ppa:marutter/c2d4u3.5" \
+    && add-apt-repository ppa:kelleyk/emacs \
+    && apt-get update \
+    && apt-get install -y emacs26
 
 # FIX LOCALES
 
@@ -177,14 +182,12 @@ RUN apt-get update \
           \n rstudio-server stop' \
           > /etc/services.d/riccardo/finish
 
-EXPOSE 8787
-
 # INSTALL CHEZMOI
 
 RUN wget https://github.com/twpayne/chezmoi/releases/download/v1.7.19/chezmoi_1.7.19_linux_amd64.deb \
 && sudo dpkg -i chezmoi_1.7.19_linux_amd64.deb
 
-## INSTALL CONDA
+## INSTALL MINICONDA
 
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
@@ -206,7 +209,7 @@ RUN usermod -s /bin/zsh riccardo \
 # ensure the conda folder and subfolder is owned by riccardo to create environments
 && chown -R riccardo /opt/conda
 
-# setup rstudio user home
+# setup home
 USER riccardo
 WORKDIR /home/riccardo
 
@@ -220,5 +223,14 @@ RUN R -e "install.packages('renv', dependencies=TRUE, repos='http://cran.rstudio
 && R -e "install.packages('data.table', dependencies=TRUE, repos = 'http://cran.rstudio.com/')"
 
 USER root
+
+# additional ubuntu packages for X
+RUN apt-get update \
+  && apt-get install -y \
+    firefox
+
+EXPOSE 8787
+EXPOSE 8888
+EXPOSE 8889
 
 CMD ["/init"]
