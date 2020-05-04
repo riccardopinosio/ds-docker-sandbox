@@ -58,8 +58,11 @@ RUN apt-get update \
     && add-apt-repository --enable-source --yes "ppa:marutter/rrutter3.5" \
     && add-apt-repository --enable-source --yes "ppa:marutter/c2d4u3.5" \
     && add-apt-repository ppa:kelleyk/emacs \
+    && add-apt-repository universe \
     && apt-get update \
-    && apt-get install -y emacs26
+    && apt-get install -y \
+    emacs26 \
+    tmux
 
 # FIX LOCALES
 
