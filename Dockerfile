@@ -7,7 +7,7 @@ ENV R_VERSION=4.0.0 \
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# UBUNTU LIBS AND SETUP
+# SETUP SYSTEM
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     bash-completion \
@@ -52,17 +52,32 @@ RUN apt-get update \
     python-setuptools \
     sudo \
     curl \
+    libxml2-dev \
     # useful to test x11 forwarding if needed
     x11-apps \
-    ## additional repos for ubuntu
+    tmux \
+    build-essential \
+    cmake \
+    libtool-bin \
+    ## enabling source repos
     && add-apt-repository --enable-source --yes "ppa:marutter/rrutter3.5" \
     && add-apt-repository --enable-source --yes "ppa:marutter/c2d4u3.5" \
-    && add-apt-repository ppa:kelleyk/emacs \
     && add-apt-repository universe \
-    && apt-get update \
-    && apt-get install -y \
-    emacs26 \
-    tmux
+    && sed -i '/deb-src/s/^# //' /etc/apt/sources.list \
+    && apt update
+
+# build emacs from source
+RUN apt-get -y build-dep emacs \
+    && apt-get install -y texinfo automake libgnutls30 libgnutls28-dev libncurses-dev libgtk-3-dev libxpm-dev libjpeg-dev libgif-dev libtiff-dev \
+    && git clone https://github.com/emacs-mirror/emacs.git --branch emacs-27 --single-branch \
+    && cd emacs \
+    && ./autogen.sh \
+    && ./configure --with-x-toolkit=gtk3 --with-modules --with-cairo \
+    && make \
+    && make install \
+    && echo 'PATH=$PATH:/emacs/src' > $HOME/.bash_profile \
+    && echo 'PATH=$PATH:/emacs/src' > $HOME/.zprofile \
+    && chmod -R 777 /emacs
 
 # FIX LOCALES
 
@@ -202,9 +217,6 @@ ENV TINI_VERSION v0.16.1
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
 RUN chmod +x /usr/bin/tini
 
-# commands to run at container startup
-COPY initializations.sh /etc/cont-init.d
-
 # MORE USER CONF
 
 # riccardo user to use zsh
@@ -216,14 +228,22 @@ RUN usermod -s /bin/zsh riccardo \
 USER riccardo
 WORKDIR /home/riccardo
 
-RUN chezmoi init https://github.com/riccardopinosio/dotfiles.git
+RUN chezmoi init https://github.com/riccardopinosio/dotfiles.git \
+&& chezmoi update \
+&& chezmoi apply
 
 RUN git config --global user.email rpinosio@gmail.com \
 && git config --global user.name riccardopinosio
 
 # basic R packages
 RUN R -e "install.packages('renv', dependencies=TRUE, repos='http://cran.rstudio.com/')" \
-&& R -e "install.packages('data.table', dependencies=TRUE, repos = 'http://cran.rstudio.com/')"
+&& R -e "install.packages('data.table', dependencies=TRUE, repos = 'http://cran.rstudio.com/')" \
+&& R -e "install.packages('languageserver', dependencies=TRUE, repos = 'http://cran.rstudio.com/')" \
+&& R -e "install.packages('tidyverse', dependencies=TRUE, repos='http://cran.rstudio.com/')" \
+&& R -e "install.packages('rstan', repos = 'https://cloud.r-project.org/', dependencies = TRUE)"
+
+# installing packages for emacs
+RUN /emacs/src/emacs --script ./.emacs.d/init.el
 
 USER root
 
@@ -231,6 +251,8 @@ USER root
 RUN apt-get update \
   && apt-get install -y \
     firefox
+
+COPY initializations.sh /etc/cont-init.d
 
 EXPOSE 8787
 EXPOSE 8888
