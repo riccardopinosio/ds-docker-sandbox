@@ -9,3 +9,6 @@ echo "HTTR_PORT=$HTTR_PORT" >> /etc/R/Renviron.site
 # now add emacs to bash and zsh
 echo 'PATH=$PATH:/emacs/src' > /home/riccardo/.bash_profile
 echo 'PATH=$PATH:/emacs/src' > /home/riccardo/.zprofile
+
+# start ssh
+/usr/sbin/sshd -D &

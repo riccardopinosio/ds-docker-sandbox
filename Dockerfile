@@ -59,12 +59,19 @@ RUN apt-get update \
     build-essential \
     cmake \
     libtool-bin \
+    firefox \
     ## enabling source repos
     && add-apt-repository --enable-source --yes "ppa:marutter/rrutter3.5" \
     && add-apt-repository --enable-source --yes "ppa:marutter/c2d4u3.5" \
     && add-apt-repository universe \
     && sed -i '/deb-src/s/^# //' /etc/apt/sources.list \
-    && apt update
+    && apt update \
+    && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
+    && locale-gen en_US.utf8 \
+    && /usr/sbin/update-locale LANG=en_US.UTF-8
+
+ENV LC_ALL en_US.UTF-8
+ENV LANG en_US.UTF-8
 
 # build emacs from source
 RUN apt-get -y build-dep emacs \
@@ -79,16 +86,7 @@ RUN apt-get -y build-dep emacs \
     && echo 'PATH=$PATH:/emacs/src' > $HOME/.zprofile \
     && chmod -R 777 /emacs
 
-# FIX LOCALES
-
-RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
-	&& locale-gen en_US.utf8 \
-	&& /usr/sbin/update-locale LANG=en_US.UTF-8
-
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-
-# BUILD R VERSION FROM SOURCE
+# R AND RSTUDIO
 
 ## build deps
 RUN apt-get -y build-dep r-base
@@ -140,8 +138,6 @@ RUN cd tmp/ \
     && apt-get autoremove -y \
     && apt-get autoclean -y \
     && rm -rf /var/lib/apt/lists/*
-
-# BUILD RSTUDIO SERVER, THE USER AND S6 FROM SOURCE
 
 ENV S6_VERSION=v1.21.7.0
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
@@ -198,14 +194,27 @@ RUN apt-get update \
           > /etc/services.d/riccardo/run \
   && echo '#!/bin/bash \
           \n rstudio-server stop' \
-          > /etc/services.d/riccardo/finish
+          > /etc/services.d/riccardo/finish \
+  && R -e "install.packages('renv', dependencies=TRUE, repos='http://cran.rstudio.com/')" \
+  && R -e "install.packages('data.table', dependencies=TRUE, repos = 'http://cran.rstudio.com/')" \
+  && R -e "install.packages('languageserver', dependencies=TRUE, repos = 'http://cran.rstudio.com/')" \
+  && R -e "install.packages('tidyverse', dependencies=TRUE, repos='http://cran.rstudio.com/')" \
+  && R -e "install.packages('rstan', repos = 'https://cloud.r-project.org/', dependencies = TRUE)"
 
-# INSTALL CHEZMOI
+# LISP
+RUN apt-get update \ 
+&& apt-get install -y sbcl cl-quicklisp \
+&& bash -c "sbcl --load /usr/share/cl-quicklisp/quicklisp.lisp \
+       --eval '(quicklisp-quickstart:install)'       \
+       --eval '(ql:add-to-init-file)'                \
+       --eval '(quit)'"
+
+# CHEZMOI
 
 RUN wget https://github.com/twpayne/chezmoi/releases/download/v1.7.19/chezmoi_1.7.19_linux_amd64.deb \
 && sudo dpkg -i chezmoi_1.7.19_linux_amd64.deb
 
-## INSTALL MINICONDA
+## MINICONDA
 
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
@@ -230,30 +239,30 @@ WORKDIR /home/riccardo
 
 RUN chezmoi init https://github.com/riccardopinosio/dotfiles.git \
 && chezmoi update \
-&& chezmoi apply
-
-RUN git config --global user.email rpinosio@gmail.com \
-&& git config --global user.name riccardopinosio
-
-# basic R packages
-RUN R -e "install.packages('renv', dependencies=TRUE, repos='http://cran.rstudio.com/')" \
-&& R -e "install.packages('data.table', dependencies=TRUE, repos = 'http://cran.rstudio.com/')" \
-&& R -e "install.packages('languageserver', dependencies=TRUE, repos = 'http://cran.rstudio.com/')" \
-&& R -e "install.packages('tidyverse', dependencies=TRUE, repos='http://cran.rstudio.com/')" \
-&& R -e "install.packages('rstan', repos = 'https://cloud.r-project.org/', dependencies = TRUE)"
-
-# installing packages for emacs
-RUN /emacs/src/emacs --script ./.emacs.d/init.el
-
+&& chezmoi apply \
+&& git config --global user.email rpinosio@gmail.com \
+&& git config --global user.name riccardopinosio \
+&& /emacs/src/emacs --script ./.emacs.d/init.el
 USER root
-
-# additional ubuntu packages for X
-RUN apt-get update \
-  && apt-get install -y \
-    firefox
 
 COPY initializations.sh /etc/cont-init.d
 
+#x2go
+RUN apt-add-repository ppa:x2go/stable \
+&& apt-get update \
+&& apt-get install -y x2goserver x2goserver-xsession
+
+
+# ENABLE SSH
+RUN apt-get update && apt-get install -y openssh-server
+RUN mkdir /var/run/sshd
+RUN sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
+
+EXPOSE 22
 EXPOSE 8787
 EXPOSE 8888
 EXPOSE 8889
