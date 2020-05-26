@@ -209,11 +209,6 @@ RUN apt-get update \
        --eval '(ql:add-to-init-file)'                \
        --eval '(quit)'"
 
-# CHEZMOI
-
-RUN wget https://github.com/twpayne/chezmoi/releases/download/v1.7.19/chezmoi_1.7.19_linux_amd64.deb \
-&& sudo dpkg -i chezmoi_1.7.19_linux_amd64.deb
-
 ## MINICONDA
 
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh && \
@@ -237,21 +232,13 @@ RUN usermod -s /bin/zsh riccardo \
 USER riccardo
 WORKDIR /home/riccardo
 
-RUN chezmoi init https://github.com/riccardopinosio/dotfiles.git \
-&& chezmoi update \
-&& chezmoi apply \
-&& git config --global user.email rpinosio@gmail.com \
-&& git config --global user.name riccardopinosio \
-&& /emacs/src/emacs --script ./.emacs.d/init.el
 USER root
-
 COPY initializations.sh /etc/cont-init.d
 
 #x2go
 RUN apt-add-repository ppa:x2go/stable \
 && apt-get update \
 && apt-get install -y x2goserver x2goserver-xsession
-
 
 # ENABLE SSH
 RUN apt-get update && apt-get install -y openssh-server
