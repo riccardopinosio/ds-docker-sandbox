@@ -12,7 +12,7 @@ The built image contains:
 
 The image can be retrieved from dockerhub at riccardopinosio/ds_sandbox.
 
-# Ssh into the container
+# ssh into the container
 
 Since the image has an active ssh service on port 22 one can ssh into the container if needed. Moreover, the x2go ubuntu service
 is good to initiate x-forwarding ssh connections to the container. This allows one, for example, to use GUI linux emacs 27
