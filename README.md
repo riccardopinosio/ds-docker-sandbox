@@ -18,7 +18,7 @@ Since the image has an active ssh service on port 22 one can ssh into the contai
 is good to initiate x-forwarding ssh connections to the container. This allows one, for example, to use GUI linux emacs 27
 on windows for (possibly remote) development. My experience with x2go is that it speeds up x forwarding quite a bit.
 Note that in order to connect to the x2go server via ssh you need the x2go client, see 
-(https://wiki.x2go.org/doku.php/doc:installation:x2goclient) for more details.
+https://wiki.x2go.org/doku.php/doc:installation:x2goclient for more details.
 
 # Notes
 I am aware that it would be better practice to have the ssh service in its own container and use docker compose, 
