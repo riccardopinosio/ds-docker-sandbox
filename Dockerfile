@@ -7,7 +7,7 @@ ENV R_VERSION=4.0.0 \
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# SETUP SYSTEM
+# SETUP SYSTEM WITH R AND PYTHON
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     bash-completion \
@@ -57,7 +57,6 @@ RUN apt-get update \
     x11-apps \
     tmux \
     build-essential \
-    cmake \
     libtool-bin \
     firefox \
     ## enabling source repos
@@ -202,7 +201,7 @@ RUN apt-get update \
   && R -e "install.packages('rstan', repos = 'https://cloud.r-project.org/', dependencies = TRUE)"
 
 # LISP
-RUN apt-get update \ 
+RUN apt-get update \
 && apt-get install -y sbcl cl-quicklisp \
 && bash -c "sbcl --load /usr/share/cl-quicklisp/quicklisp.lisp \
        --eval '(quicklisp-quickstart:install)'       \
