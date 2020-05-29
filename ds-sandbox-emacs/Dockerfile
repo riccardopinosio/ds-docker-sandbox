@@ -1,7 +1,7 @@
 # adds emacs and lisp to sandbox-base
 FROM riccardopinosio/ds-sandbox-base
 
-# build emacs from source
+# build emacs and lisp from source
 RUN apt-get -y build-dep emacs \
     && apt-get install -y texinfo automake libgnutls30 libgnutls28-dev libncurses-dev libgtk-3-dev libxpm-dev libjpeg-dev libgif-dev libtiff-dev \
     && git clone https://github.com/emacs-mirror/emacs.git --branch emacs-27 --single-branch \
@@ -13,14 +13,13 @@ RUN apt-get -y build-dep emacs \
     && echo 'PATH=$PATH:/emacs/src' > $HOME/.bash_profile \
     && echo 'PATH=$PATH:/emacs/src' > $HOME/.zprofile \
     && chmod -R 777 /emacs \
-
-# LISP
     && apt-get update \
     && apt-get install -y sbcl cl-quicklisp \
     && bash -c "sbcl --load /usr/share/cl-quicklisp/quicklisp.lisp \
        --eval '(quicklisp-quickstart:install)'       \
        --eval '(ql:add-to-init-file)'                \
-       --eval '(quit)'"
+       --eval '(quit)'" \
+    && rm -rf /var/lib/apt/lists/*
 
 # emacs settings at startup
 ENV HAS_EMACS=True
