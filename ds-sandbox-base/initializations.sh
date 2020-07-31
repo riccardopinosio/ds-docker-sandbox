@@ -13,7 +13,7 @@ usermod -s /bin/zsh baseuser
 ## install chezmoi and home config
 runuser -l baseuser -c "git config --global user.name 'riccardopinosio'"
 runuser -l baseuser -c "git config --global user.email 'rpinosio@gmail.com'"
-runuser -l baseuser -c " curl -sfL https://git.io/chezmoi | sh"
+runuser -l baseuser -c "curl -sfL https://git.io/chezmoi | sh"
 runuser -l baseuser -c "~/bin/chezmoi init https://github.com/riccardopinosio/dotfiles.git"
 runuser -l baseuser -c "~/bin/chezmoi apply"
 
