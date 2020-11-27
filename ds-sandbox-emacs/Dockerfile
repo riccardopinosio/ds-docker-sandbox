@@ -1,5 +1,6 @@
 # adds emacs and lisp to sandbox-base
-FROM riccardopinosio/ds-sandbox-base
+#FROM riccardopinosio/ds-sandbox-base
+FROM sandbox_base
 
 # build emacs and lisp from source
 RUN apt-get -y build-dep emacs \
@@ -21,7 +22,9 @@ RUN apt-get -y build-dep emacs \
        --eval '(quit)'" \
     && rm -rf /var/lib/apt/lists/*
 
-# emacs settings at startup
-ENV HAS_EMACS=True
+RUN echo 'PATH=$PATH:/emacs/src' > /home/baseuser/.bash_profile \
+&& echo 'PATH=$PATH:/emacs/src' > /home/baseuser/.zprofile \
+&& runuser -l baseuser -c '/emacs/src/emacs --script ~/.emacs.d/init.el'
 
+USER root
 CMD ["/init"]

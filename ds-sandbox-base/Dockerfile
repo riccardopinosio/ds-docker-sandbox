@@ -200,6 +200,15 @@ RUN apt-add-repository ppa:x2go/stable \
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 
+## install chezmoi and home config
+
+RUN git config --global user.name 'riccardopinosio' \
+&& git config --global user.email 'rpinosio@gmail.com' \
+&& cd /home/baseuser \
+&& runuser -l baseuser -c 'curl -sfL https://git.io/chezmoi | sh' \
+&& runuser -l baseuser -c '~/bin/chezmoi init https://github.com/riccardopinosio/dotfiles.git' \
+&& runuser -l baseuser -c '~/bin/chezmoi apply'
+
 EXPOSE 22
 EXPOSE 8787
 EXPOSE 8888
