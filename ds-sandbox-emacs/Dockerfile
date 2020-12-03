@@ -1,5 +1,4 @@
-#FROM riccardopinosio/sandbox_base
-FROM sandboxx
+FROM riccardopinosio/sandbox_base
 
 # build emacs and lisp from source
 RUN apt-get -y build-dep emacs \
