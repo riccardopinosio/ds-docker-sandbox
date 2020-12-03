@@ -1,6 +1,4 @@
-# adds emacs and lisp to sandbox-base
-#FROM riccardopinosio/ds-sandbox-base
-FROM sandbox_base
+FROM riccardopinosio/sandbox_base
 
 # build emacs and lisp from source
 RUN apt-get -y build-dep emacs \
