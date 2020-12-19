@@ -209,6 +209,10 @@ RUN git config --global user.name 'riccardopinosio' \
 && runuser -l baseuser -c '~/bin/chezmoi init https://github.com/riccardopinosio/dotfiles.git' \
 && runuser -l baseuser -c '~/bin/chezmoi apply'
 
+## install i3wm
+RUN apt-get update \
+&& apt-get install i3
+
 EXPOSE 22
 EXPOSE 8787
 EXPOSE 8888
