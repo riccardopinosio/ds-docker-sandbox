@@ -211,7 +211,7 @@ RUN git config --global user.name 'riccardopinosio' \
 
 ## install i3wm
 RUN apt-get update \
-&& apt-get install i3
+&& apt-get -y install i3
 
 EXPOSE 22
 EXPOSE 8787
